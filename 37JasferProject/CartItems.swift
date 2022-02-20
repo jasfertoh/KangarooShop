@@ -12,11 +12,13 @@ public class CartItems: NSObject, Codable {
     var productImage: String
     var productPrice: Double
     var productDescription: String
+    var productQty: Int
     
-    init(title: String, image: String, price: Double, description: String) {
+    init(title: String, image: String, price: Double, description: String, quantity: Int) {
         self.productTitle = title
         self.productImage = image
         self.productPrice = price
         self.productDescription = description
+        self.productQty = quantity
     }
 }

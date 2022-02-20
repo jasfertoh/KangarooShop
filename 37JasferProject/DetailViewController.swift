@@ -53,7 +53,8 @@ class DetailViewController: UIViewController {
                 dismiss(animated: true, completion: nil)
             } else {
                 cart = [CartItems]()
-                let newItem = CartItems(title: currentItem!.productTitle, image: currentItem!.productImage, price: currentItem!.productPrice, description: currentItem!.productDescription)
+                let newItem = CartItems(title: currentItem!.productTitle, image: currentItem!.productImage, price: currentItem!.productPrice, description: currentItem!.productDescription,
+                    quantity: 1)
                 for item in data {
                     if item.cart == nil { // if user has no items in cart, add the new item into the cart and save to database
                         cart.append(newItem)
@@ -72,6 +73,18 @@ class DetailViewController: UIViewController {
                         let decodedItem = try decoder.decode([CartItems].self, from: item.cart!)
 
                         cart = decodedItem
+                        for cartItem in cart {
+                            if cartItem.productTitle == newItem.productTitle {
+                                print("exists")
+                                cartItem.productQty += 1
+                                let encodedItem = try encoder.encode(cart)
+
+                                item.cart = encodedItem
+                                app.saveContext()
+                                alertNotif(title: "Success", message: "Successfully added \(currentItem!.productTitle) into cart.", action: "Ok")
+                                return
+                            }
+                        }
                         cart.append(newItem)
 
                         let encodedItem = try encoder.encode(cart)
@@ -91,7 +104,7 @@ class DetailViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "buyNow" {
             let _ = segue.destination as! CheckOutViewController
-            checkOutCart = [CartItems(title: currentItem!.productTitle, image: currentItem!.productImage, price: currentItem!.productPrice, description: currentItem!.productDescription)]
+            checkOutCart = [CartItems(title: currentItem!.productTitle, image: currentItem!.productImage, price: currentItem!.productPrice, description: currentItem!.productDescription, quantity: 1)]
         }
     }
     

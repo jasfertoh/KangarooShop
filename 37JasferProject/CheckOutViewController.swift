@@ -29,7 +29,7 @@ class CheckOutViewController: UIViewController {
         tableView.dataSource = self
         tableView.register(CartTableViewCell.nib(), forCellReuseIdentifier: CartTableViewCell.identifier)
         for item in checkOutCart {
-            totalAmount += Double(item.productPrice)
+            totalAmount += (Double(item.productPrice) * Double(item.productQty))
         }
         
         confirmBtn.layer.cornerRadius = 6
@@ -177,7 +177,7 @@ extension CheckOutViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CartTableViewCell") as! CartTableViewCell
-        cell.configure(with: checkOutCart[indexPath.row].productImage, title: checkOutCart[indexPath.row].productTitle, price: checkOutCart[indexPath.row].productPrice)
+        cell.configure(with: checkOutCart[indexPath.row].productImage, title: checkOutCart[indexPath.row].productTitle, price: checkOutCart[indexPath.row].productPrice, quantity: checkOutCart[indexPath.row].productQty)
         return cell
     }
     

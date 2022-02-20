@@ -10,7 +10,7 @@ import CoreData
 
 var checkOutCart = [CartItems]()
 
-class CartViewController: UIViewController {
+class CartViewController: UIViewController, CartDelegate {
     var cartItems = [CartItems]()
     var totalAmount = Double(0)
     let app = UIApplication.shared.delegate as! AppDelegate
@@ -35,6 +35,7 @@ class CartViewController: UIViewController {
     func fetchSubtotal() {
         // fetch the subtotal by adding the price of all the items in the cart.
         do {
+            totalAmount = 0.0
             let decoder = JSONDecoder()
             let fetchRequest = User.fetchRequest()
             let predicate = NSPredicate(format: "username MATCHES %@", currentUser!.username)
@@ -51,7 +52,7 @@ class CartViewController: UIViewController {
                         let decodedItem = try decoder.decode([CartItems].self, from: item.cart!)
                         cartItems = decodedItem
                         for i in decodedItem {
-                            totalAmount += i.productPrice
+                            totalAmount += (i.productPrice * Double(i.productQty))
                         }
                     }
                     
@@ -61,6 +62,10 @@ class CartViewController: UIViewController {
         } catch {
             print(error)
         }
+    }
+    
+    func cartUpdate() {
+        fetchSubtotal()
     }
     
     @IBAction func checkOutPressed(_ sender: UIButton) {
@@ -132,7 +137,11 @@ extension CartViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: CartTableViewCell.identifier) as! CartTableViewCell
-        cell.configure(with: cartItems[indexPath.row].productImage, title: cartItems[indexPath.row].productTitle, price: cartItems[indexPath.row].productPrice)
+        cell.configure(with: cartItems[indexPath.row].productImage, title: cartItems[indexPath.row].productTitle, price: cartItems[indexPath.row].productPrice, quantity: cartItems[indexPath.row].productQty)
+        cell.stepper.value = Double(cartItems[indexPath.row].productQty)
+        cell.cartItem = cartItems[indexPath.row]
+        cell.delegate = self
+        cell.delegate?.cartUpdate()
         return cell
     }
     
@@ -145,7 +154,7 @@ extension CartViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         // if user removes an item from the cart, delete the item's amount from the subtotal amount.
         if editingStyle == .delete {
-            totalAmount -= cartItems[indexPath.row].productPrice
+            totalAmount -= (cartItems[indexPath.row].productPrice * Double(cartItems[indexPath.row].productQty))
             subtotal.text = "\(totalAmount)0 credits"
             
             cartItems.remove(at: indexPath.row)
